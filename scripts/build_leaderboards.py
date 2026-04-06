@@ -240,7 +240,10 @@ def rows_from_yaml(path: Path) -> list[dict[str, Any]]:
             "date_tested": date_tested,
             "contributor": contributor,
             "contributor_source": contributor_source,
-            "notes": (data.get("notes", "") or "").strip().splitlines()[0] if data.get("notes") else "",
+            "notes": (
+                (data.get("notes", "") or "").strip().splitlines()[0]
+                if data.get("notes") else ""
+            ),
             "source_file": str(path.as_posix()),
         })
     if not rows:

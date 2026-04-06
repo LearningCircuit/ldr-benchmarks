@@ -156,7 +156,10 @@ def check_file(path: Path, results_root: Path) -> list[str]:
         if "accuracy" not in block:
             errors.append(f"results.{strat}.accuracy is missing")
         elif not parse_accuracy(block.get("accuracy")):
-            errors.append(f"results.{strat}.accuracy could not be parsed: {block.get('accuracy')!r}")
+            errors.append(
+                f"results.{strat}.accuracy could not be parsed: "
+                f"{block.get('accuracy')!r}"
+            )
 
     # Path convention: results/{dataset}/{strategy}/{search_engine}/{file}.yaml
     try:
@@ -220,7 +223,10 @@ def main() -> int:
         if not args.results_dir.exists():
             print(f"results dir not found: {args.results_dir}", file=sys.stderr)
             return 1
-        yaml_files = sorted(args.results_dir.rglob("*.yaml")) + sorted(args.results_dir.rglob("*.yml"))
+        yaml_files = (
+            sorted(args.results_dir.rglob("*.yaml"))
+            + sorted(args.results_dir.rglob("*.yml"))
+        )
 
     if not yaml_files:
         print("no YAML files to validate")
