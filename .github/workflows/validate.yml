@@ -1,0 +1,29 @@
+name: Validate benchmark submissions
+
+on:
+  pull_request:
+    paths:
+      - 'results/**'
+      - 'scripts/validate_yamls.py'
+      - '.github/workflows/validate.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate YAML submissions
+        run: python scripts/validate_yamls.py --results-dir results
+
+      - name: Rebuild leaderboards (dry check)
+        run: python scripts/build_leaderboards.py --results-dir results --out-dir /tmp/leaderboards

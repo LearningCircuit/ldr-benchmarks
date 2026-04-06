@@ -1,0 +1,57 @@
+name: Publish leaderboards to Hugging Face
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'results/**'
+      - 'scripts/build_leaderboards.py'
+      - 'scripts/sync_to_hf.py'
+      - 'hf_README.md'
+  workflow_dispatch:
+
+concurrency:
+  group: publish-leaderboards
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml huggingface_hub
+
+      - name: Validate YAML submissions
+        run: python scripts/validate_yamls.py --results-dir results
+
+      - name: Rebuild leaderboards
+        run: python scripts/build_leaderboards.py --results-dir results --out-dir leaderboards
+
+      - name: Commit regenerated leaderboards (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet leaderboards/; then
+            git add leaderboards/
+            git commit -m "chore: regenerate leaderboards [skip ci]"
+            git push
+          else
+            echo "leaderboards unchanged"
+          fi
+
+      - name: Sync CSVs + README to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/sync_to_hf.py --commit-message "Sync leaderboards from GitHub ${{ github.sha }}"
