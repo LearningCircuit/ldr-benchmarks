@@ -4,7 +4,7 @@ search_engine: serper
 results:
   dataset: SimpleQA
   total_questions: 200
-  source_based:
+  langgraph_agent:
     accuracy: "91.2% (182/200)"
     iterations: 10
     questions_per_iteration: 1
