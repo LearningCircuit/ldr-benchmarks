@@ -47,13 +47,13 @@ def infer_contributor_from_git(path: Path) -> str:
                 "--diff-filter=A",
                 "--format=%an",
                 "--",
-                str(path),
+                str(path.resolve()),
             ],
             capture_output=True,
             text=True,
             timeout=5,
             check=False,
-            cwd=path.parent if path.parent.exists() else None,
+            cwd=str(path.resolve().parent),
         )
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return ""
