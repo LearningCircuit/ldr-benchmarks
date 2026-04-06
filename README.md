@@ -198,11 +198,33 @@ This is a community-submitted leaderboard, not a controlled experiment.
 - **Strategy semantics drift** between LDR versions — prefer comparing
   runs tagged with the same `ldr_version`.
 
+## Contributor attribution
+
+Each CSV row includes a `contributor` column and a `contributor_source`
+column indicating where the name came from:
+
+- **`yaml`** — the submitter set an explicit `contributor:` field in the
+  YAML. This wins over everything else.
+- **`git`** — no explicit field; the aggregator ran
+  `git log --follow --diff-filter=A` on the result file and used the
+  author of the commit that first added it. Later edits to the file
+  do not overwrite the original contributor.
+- **`""`** (empty) — neither a YAML field nor a git history was
+  available (e.g. running outside a git checkout).
+
+If you want credit under a handle other than your git commit name,
+add `contributor: your-handle` to the YAML.
+
 ## Local development
 
 ```bash
-# Validate all submissions
+# Install dependencies (pyyaml is the only hard requirement)
 pip install pyyaml
+
+# Run unit tests (uses stdlib unittest, no pytest required)
+python -m unittest tests.test_scripts -v
+
+# Validate all submissions
 python scripts/validate_yamls.py
 
 # Validate a specific file

@@ -4,7 +4,8 @@ on:
   pull_request:
     paths:
       - 'results/**'
-      - 'scripts/validate_yamls.py'
+      - 'scripts/**'
+      - 'tests/**'
       - '.github/workflows/validate.yml'
 
 jobs:
@@ -13,6 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Fetch full history so git-contributor inference can look up
+          # the original author of each results/*.yaml file.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -21,6 +26,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install pyyaml
+
+      - name: Run unit tests
+        run: python -m unittest tests.test_scripts -v
 
       - name: Validate YAML submissions
         run: python scripts/validate_yamls.py --results-dir results

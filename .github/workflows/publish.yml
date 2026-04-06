@@ -24,6 +24,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Fetch full history so build_leaderboards.py can look up
+          # the original git author of each results/*.yaml file via
+          # `git log --follow --diff-filter=A`.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,6 +37,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install pyyaml huggingface_hub
+
+      - name: Run unit tests
+        run: python -m unittest tests.test_scripts -v
 
       - name: Validate YAML submissions
         run: python scripts/validate_yamls.py --results-dir results

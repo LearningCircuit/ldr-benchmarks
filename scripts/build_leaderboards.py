@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,6 +27,39 @@ try:
     import yaml
 except ImportError:
     sys.exit("Missing dependency: pip install pyyaml")
+
+
+def infer_contributor_from_git(path: Path) -> str:
+    """Return the author name of the commit that first added `path` to git,
+    or an empty string if git is unavailable or the file is not tracked.
+
+    Uses the first commit that touched the file (git log --follow --diff-filter=A)
+    rather than the latest one, so a later style-fix commit doesn't steal
+    authorship from the original contributor.
+    """
+    try:
+        # --follow handles renames; --diff-filter=A restricts to the commit
+        # that ADDED the file; we take the last line (oldest matching commit).
+        result = subprocess.run(
+            [
+                "git", "log",
+                "--follow",
+                "--diff-filter=A",
+                "--format=%an",
+                "--",
+                str(path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return ""
+    if result.returncode != 0:
+        return ""
+    authors = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+    return authors[-1] if authors else ""
 
 
 RESERVED_RESULT_KEYS = {"dataset", "total_questions"}
@@ -91,6 +125,7 @@ COLUMNS = [
     "ldr_version",
     "date_tested",
     "contributor",
+    "contributor_source",
     "notes",
     "source_file",
 ]
@@ -147,6 +182,23 @@ def rows_from_yaml(path: Path) -> list[dict]:
 
     date_tested = data.get("date_tested") or test_details.get("date_tested", "")
 
+    # Resolve contributor: prefer explicit YAML field, fall back to git
+    # blame of the file (first commit to add it). The `contributor_source`
+    # column records which path was used so reviewers can tell self-reported
+    # contributors from git-inferred ones.
+    explicit_contributor = (data.get("contributor") or "").strip()
+    if explicit_contributor:
+        contributor = explicit_contributor
+        contributor_source = "yaml"
+    else:
+        git_contributor = infer_contributor_from_git(path)
+        if git_contributor:
+            contributor = git_contributor
+            contributor_source = "git"
+        else:
+            contributor = ""
+            contributor_source = ""
+
     rows = []
     for strategy_key, strategy_block in iter_strategy_blocks(results_block):
         pct, correct, total = parse_accuracy(strategy_block.get("accuracy"))
@@ -175,7 +227,8 @@ def rows_from_yaml(path: Path) -> list[dict]:
             "evaluator_provider": evaluator.get("provider", ""),
             "ldr_version": versions.get("ldr_version", ""),
             "date_tested": date_tested,
-            "contributor": data.get("contributor", ""),
+            "contributor": contributor,
+            "contributor_source": contributor_source,
             "notes": (data.get("notes", "") or "").strip().splitlines()[0] if data.get("notes") else "",
             "source_file": str(path.as_posix()),
         })
