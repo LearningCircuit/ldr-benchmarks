@@ -120,6 +120,15 @@ Keep these caveats in mind when interpreting results:
 Plain-text distribution of BrowseComp and xbench questions or answers
 is prohibited.
 
+## Contributors
+
+<!-- CONTRIBUTORS:START -->
+Thanks to everyone who has contributed benchmark runs:
+
+- **kwhyte7** — 1 submission
+- **LearningCircuit** — 1 submission
+<!-- CONTRIBUTORS:END -->
+
 ## Citation
 
 ```bibtex

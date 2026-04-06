@@ -69,6 +69,10 @@ def main() -> int:
         print(f"WARN: HF README not found at {args.hf_readme} — skipping",
               file=sys.stderr)
 
+    contributors_file = Path("CONTRIBUTORS.md")
+    if contributors_file.exists():
+        uploads.append((contributors_file, "CONTRIBUTORS.md"))
+
     print(f"Target repo: {args.repo} (dataset)")
     for src, dest in uploads:
         print(f"  {src}  ->  {dest}")
