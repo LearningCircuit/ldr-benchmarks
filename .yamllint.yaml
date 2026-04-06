@@ -2,13 +2,17 @@ extends: default
 
 rules:
   line-length:
-    max: 200
-    level: warning
+    max: 120
+    level: error
   document-start: disable
   truthy:
     check-keys: false
+    level: error
   comments:
     min-spaces-from-content: 1
   indentation:
     spaces: 2
     indent-sequences: consistent
+  empty-lines:
+    max: 2
+  trailing-spaces: enable

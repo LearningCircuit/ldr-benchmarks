@@ -1,0 +1,47 @@
+name: Semgrep
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  semgrep:
+    name: Semgrep scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    container:
+      image: semgrep/semgrep@sha256:bd06ed3ed51e6e022f3e3aa5e7f86f47a30db0e5fa5c6bb4f8c7c43ce00b75e8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run Semgrep
+        run: semgrep ci --sarif --output=semgrep.sarif
+        env:
+          SEMGREP_RULES: >-
+            p/default
+            p/python
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep

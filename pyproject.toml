@@ -1,0 +1,57 @@
+[project]
+name = "ldr-benchmarks"
+version = "0.0.0"
+description = "Community benchmark scripts for Local Deep Research"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "S",    # flake8-bandit (security)
+    "C4",   # flake8-comprehensions
+    "RUF",  # ruff-specific
+    "PTH",  # use pathlib
+    "PL",   # pylint
+    "TRY",  # tryceratops
+]
+ignore = [
+    "PLR0913",  # too many arguments
+    "PLR2004",  # magic value comparison
+    "TRY003",   # long exception messages
+    "S603",     # subprocess-without-shell-equals-true (we use list args)
+    "S607",     # start-process-with-partial-path (git is on PATH)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLR2004"]  # asserts and magic values OK in tests
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["scripts", "tests"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+
+[[tool.mypy.overrides]]
+module = "yaml"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "huggingface_hub"
+ignore_missing_imports = true
