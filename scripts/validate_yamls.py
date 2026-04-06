@@ -99,7 +99,7 @@ def slugify(name: str) -> str:
 def parse_accuracy(raw: object) -> bool:
     if raw is None:
         return False
-    if isinstance(raw, (int, float)):
+    if isinstance(raw, int | float):
         return True
     return bool(re.search(r"[\d.]+", str(raw)))
 
@@ -119,9 +119,9 @@ def check_file(path: Path, results_root: Path) -> list[str]:
     try:
         data = yaml.safe_load(text)
     except yaml.YAMLError as e:
-        return errors + [f"invalid YAML: {e}"]
+        return [*errors, f"invalid YAML: {e}"]
     if not isinstance(data, dict):
-        return errors + ["top-level YAML must be a mapping"]
+        return [*errors, "top-level YAML must be a mapping"]
 
     for key in REQUIRED_TOP_LEVEL:
         if key not in data:
@@ -197,13 +197,12 @@ def check_file(path: Path, results_root: Path) -> list[str]:
                 )
 
     # Restricted benchmarks must not contain examples
-    if benchmark_entry and benchmark_entry["restricted"]:
-        if "examples" in data:
-            errors.append(
-                f"dataset '{benchmark_entry['canonical_id']}' is restricted — "
-                f"per-question examples are not allowed for this benchmark. "
-                f"Remove the 'examples:' block before submitting."
-            )
+    if benchmark_entry and benchmark_entry["restricted"] and "examples" in data:
+        errors.append(
+            f"dataset '{benchmark_entry['canonical_id']}' is restricted — "
+            f"per-question examples are not allowed for this benchmark. "
+            f"Remove the 'examples:' block before submitting."
+        )
 
     return errors
 

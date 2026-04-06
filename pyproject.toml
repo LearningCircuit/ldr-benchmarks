@@ -34,6 +34,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "PLR2004"]  # asserts and magic values OK in tests
+"scripts/validate_yamls.py" = ["PLR0912", "PLR0915"]  # validator naturally branchy
 
 [tool.mypy]
 python_version = "3.11"

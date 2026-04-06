@@ -144,8 +144,8 @@ def parse_accuracy(raw: object) -> tuple[float | None, int | None, int | None]:
     """Return (percent, correct, total) from fields like '91.2% (182/200)'."""
     if raw is None:
         return None, None, None
-    if isinstance(raw, (int, float)):
-        return float(raw), None, None  # type: ignore[unreachable]
+    if isinstance(raw, int | float):
+        return float(raw), None, None
     s = str(raw).strip()
     pct_match = re.search(r"([\d.]+)\s*%", s)
     frac_match = re.search(r"\(?\s*(\d+)\s*/\s*(\d+)\s*\)?", s)
