@@ -56,3 +56,5 @@ notes: |
   # Provider: OLLAMA
   # Note: Configuration values are from current settings at download time,
   # not necessarily the values used during the benchmark run
+
+contributor: kwhyte7
