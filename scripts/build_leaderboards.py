@@ -53,6 +53,7 @@ def infer_contributor_from_git(path: Path) -> str:
             text=True,
             timeout=5,
             check=False,
+            cwd=path.parent if path.parent.exists() else None,
         )
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return ""
