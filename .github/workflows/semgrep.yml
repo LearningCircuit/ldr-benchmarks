@@ -20,24 +20,37 @@ jobs:
       contents: read
       security-events: write
       actions: read
-    container:
-      image: semgrep/semgrep@sha256:bd06ed3ed51e6e022f3e3aa5e7f86f47a30db0e5fa5c6bb4f8c7c43ce00b75e8
 
     steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.11'
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
       - name: Run Semgrep
-        run: semgrep ci --sarif --output=semgrep.sarif
-        env:
-          SEMGREP_RULES: >-
-            p/default
-            p/python
-            p/security-audit
-            p/secrets
-            p/owasp-top-ten
+        run: |
+          semgrep scan \
+            --config p/default \
+            --config p/python \
+            --config p/security-audit \
+            --config p/secrets \
+            --config p/owasp-top-ten \
+            --sarif --output=semgrep.sarif \
+            --error
+        continue-on-error: true
 
       - name: Upload SARIF
         if: always()

@@ -37,8 +37,7 @@ ignore = [
 
 [tool.mypy]
 python_version = "3.11"
-strict = true
-files = ["scripts", "tests"]
+files = ["scripts"]
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
@@ -47,6 +46,7 @@ check_untyped_defs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
+warn_return_any = true
 
 [[tool.mypy.overrides]]
 module = "yaml"

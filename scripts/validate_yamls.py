@@ -23,11 +23,19 @@ import argparse
 import re
 import sys
 from pathlib import Path
+from typing import Any, TypedDict
 
 try:
     import yaml
 except ImportError:
     sys.exit("Missing dependency: pip install pyyaml")
+
+
+class BenchmarkEntry(TypedDict):
+    canonical_id: str
+    path_slug: str
+    accepted_names: set[str]
+    restricted: bool
 
 
 # Whitelist of supported benchmarks. Mirrors LDR's DatasetRegistry
@@ -36,7 +44,7 @@ except ImportError:
 # list the display names contributors may write in `results.dataset:`,
 # set the path_slug used in results/{slug}/..., and set restricted=True
 # if per-question examples must not be shared publicly.
-BENCHMARKS = [
+BENCHMARKS: list[BenchmarkEntry] = [
     {
         "canonical_id": "simpleqa",
         "path_slug": "simpleqa",
@@ -57,22 +65,15 @@ BENCHMARKS = [
     },
 ]
 
-# Derived lookup tables.
-_BENCHMARK_BY_NAME: dict[str, dict] = {}
-for _b in BENCHMARKS:
-    for _n in _b["accepted_names"]:
-        _BENCHMARK_BY_NAME[_n] = _b
-    _BENCHMARK_BY_NAME[_b["path_slug"]] = _b
 
-
-def lookup_benchmark(name: str) -> dict | None:
+def lookup_benchmark(name: str) -> BenchmarkEntry | None:
     """Look up a benchmark whitelist entry by any accepted form of the name."""
     if not name:
         return None
     key = re.sub(r"[^a-z0-9]+", "", str(name).lower())
     # Try each entry's normalized accepted names + path_slug.
     for b in BENCHMARKS:
-        candidates = set(b["accepted_names"]) | {b["path_slug"], b["canonical_id"]}
+        candidates = b["accepted_names"] | {b["path_slug"], b["canonical_id"]}
         if any(re.sub(r"[^a-z0-9]+", "", c.lower()) == key for c in candidates):
             return b
     return None
@@ -95,7 +96,7 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-")
 
 
-def parse_accuracy(raw) -> bool:
+def parse_accuracy(raw: object) -> bool:
     if raw is None:
         return False
     if isinstance(raw, (int, float)):
@@ -143,8 +144,8 @@ def check_file(path: Path, results_root: Path) -> list[str]:
             f"BENCHMARKS in scripts/validate_yamls.py."
         )
 
-    strategy_blocks = [
-        k for k, v in results_block.items()
+    strategy_blocks: list[str] = [
+        str(k) for k, v in results_block.items()
         if k not in RESERVED_RESULT_KEYS and isinstance(v, dict)
     ]
     if not strategy_blocks:
