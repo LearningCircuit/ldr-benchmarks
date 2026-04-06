@@ -23,11 +23,19 @@ import argparse
 import re
 import sys
 from pathlib import Path
+from typing import TypedDict
 
 try:
     import yaml
 except ImportError:
     sys.exit("Missing dependency: pip install pyyaml")
+
+
+class BenchmarkEntry(TypedDict):
+    canonical_id: str
+    path_slug: str
+    accepted_names: set[str]
+    restricted: bool
 
 
 # Whitelist of supported benchmarks. Mirrors LDR's DatasetRegistry
@@ -36,7 +44,7 @@ except ImportError:
 # list the display names contributors may write in `results.dataset:`,
 # set the path_slug used in results/{slug}/..., and set restricted=True
 # if per-question examples must not be shared publicly.
-BENCHMARKS = [
+BENCHMARKS: list[BenchmarkEntry] = [
     {
         "canonical_id": "simpleqa",
         "path_slug": "simpleqa",
@@ -57,22 +65,15 @@ BENCHMARKS = [
     },
 ]
 
-# Derived lookup tables.
-_BENCHMARK_BY_NAME: dict[str, dict] = {}
-for _b in BENCHMARKS:
-    for _n in _b["accepted_names"]:
-        _BENCHMARK_BY_NAME[_n] = _b
-    _BENCHMARK_BY_NAME[_b["path_slug"]] = _b
 
-
-def lookup_benchmark(name: str) -> dict | None:
+def lookup_benchmark(name: str) -> BenchmarkEntry | None:
     """Look up a benchmark whitelist entry by any accepted form of the name."""
     if not name:
         return None
     key = re.sub(r"[^a-z0-9]+", "", str(name).lower())
     # Try each entry's normalized accepted names + path_slug.
     for b in BENCHMARKS:
-        candidates = set(b["accepted_names"]) | {b["path_slug"], b["canonical_id"]}
+        candidates = b["accepted_names"] | {b["path_slug"], b["canonical_id"]}
         if any(re.sub(r"[^a-z0-9]+", "", c.lower()) == key for c in candidates):
             return b
     return None
@@ -95,10 +96,10 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-")
 
 
-def parse_accuracy(raw) -> bool:
+def parse_accuracy(raw: object) -> bool:
     if raw is None:
         return False
-    if isinstance(raw, (int, float)):
+    if isinstance(raw, int | float):
         return True
     return bool(re.search(r"[\d.]+", str(raw)))
 
@@ -118,9 +119,9 @@ def check_file(path: Path, results_root: Path) -> list[str]:
     try:
         data = yaml.safe_load(text)
     except yaml.YAMLError as e:
-        return errors + [f"invalid YAML: {e}"]
+        return [*errors, f"invalid YAML: {e}"]
     if not isinstance(data, dict):
-        return errors + ["top-level YAML must be a mapping"]
+        return [*errors, "top-level YAML must be a mapping"]
 
     for key in REQUIRED_TOP_LEVEL:
         if key not in data:
@@ -143,8 +144,8 @@ def check_file(path: Path, results_root: Path) -> list[str]:
             f"BENCHMARKS in scripts/validate_yamls.py."
         )
 
-    strategy_blocks = [
-        k for k, v in results_block.items()
+    strategy_blocks: list[str] = [
+        str(k) for k, v in results_block.items()
         if k not in RESERVED_RESULT_KEYS and isinstance(v, dict)
     ]
     if not strategy_blocks:
@@ -155,7 +156,10 @@ def check_file(path: Path, results_root: Path) -> list[str]:
         if "accuracy" not in block:
             errors.append(f"results.{strat}.accuracy is missing")
         elif not parse_accuracy(block.get("accuracy")):
-            errors.append(f"results.{strat}.accuracy could not be parsed: {block.get('accuracy')!r}")
+            errors.append(
+                f"results.{strat}.accuracy could not be parsed: "
+                f"{block.get('accuracy')!r}"
+            )
 
     # Path convention: results/{dataset}/{strategy}/{search_engine}/{file}.yaml
     try:
@@ -196,13 +200,12 @@ def check_file(path: Path, results_root: Path) -> list[str]:
                 )
 
     # Restricted benchmarks must not contain examples
-    if benchmark_entry and benchmark_entry["restricted"]:
-        if "examples" in data:
-            errors.append(
-                f"dataset '{benchmark_entry['canonical_id']}' is restricted — "
-                f"per-question examples are not allowed for this benchmark. "
-                f"Remove the 'examples:' block before submitting."
-            )
+    if benchmark_entry and benchmark_entry["restricted"] and "examples" in data:
+        errors.append(
+            f"dataset '{benchmark_entry['canonical_id']}' is restricted — "
+            f"per-question examples are not allowed for this benchmark. "
+            f"Remove the 'examples:' block before submitting."
+        )
 
     return errors
 
@@ -220,7 +223,10 @@ def main() -> int:
         if not args.results_dir.exists():
             print(f"results dir not found: {args.results_dir}", file=sys.stderr)
             return 1
-        yaml_files = sorted(args.results_dir.rglob("*.yaml")) + sorted(args.results_dir.rglob("*.yml"))
+        yaml_files = (
+            sorted(args.results_dir.rglob("*.yaml"))
+            + sorted(args.results_dir.rglob("*.yml"))
+        )
 
     if not yaml_files:
         print("no YAML files to validate")

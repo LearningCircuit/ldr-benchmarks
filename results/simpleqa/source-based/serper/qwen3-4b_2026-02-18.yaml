@@ -36,7 +36,7 @@ configuration:
   temperature: 0.7
   max_tokens: 30000 # Current setting at download time
   local_provider_context_window_size: 4096 # Current setting at download time
-  context_window_unrestricted: Yes # Current setting at download time
+  context_window_unrestricted: true  # Current setting at download time
 
 # Versions
 versions:
@@ -46,8 +46,8 @@ versions:
 # Test Details
 test_details:
   date_tested: 2026-02-18
-  rate_limiting_issues: no # yes/no
-  search_failures: no # number of failed searches, if any
+  rate_limiting_issues: false  # yes/no
+  search_failures: false  # number of failed searches, if any
 
 # Notes
 notes: |

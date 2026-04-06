@@ -21,12 +21,20 @@ import csv
 import re
 import subprocess
 import sys
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any, TypedDict
 
 try:
     import yaml
 except ImportError:
     sys.exit("Missing dependency: pip install pyyaml")
+
+
+class BenchmarkEntry(TypedDict):
+    canonical_id: str
+    path_slug: str
+    accepted_names: set[str]
 
 
 def infer_contributor_from_git(path: Path) -> str:
@@ -68,7 +76,7 @@ RESERVED_RESULT_KEYS = {"dataset", "total_questions"}
 # Whitelist mirroring LDR's DatasetRegistry. Must stay in sync with
 # scripts/validate_yamls.py. Keeping it duplicated rather than importing
 # so each script stays runnable standalone.
-BENCHMARKS = [
+BENCHMARKS: list[BenchmarkEntry] = [
     {
         "canonical_id": "simpleqa",
         "path_slug": "simpleqa",
@@ -132,11 +140,11 @@ COLUMNS = [
 ]
 
 
-def parse_accuracy(raw) -> tuple[float | None, int | None, int | None]:
+def parse_accuracy(raw: object) -> tuple[float | None, int | None, int | None]:
     """Return (percent, correct, total) from fields like '91.2% (182/200)'."""
     if raw is None:
         return None, None, None
-    if isinstance(raw, (int, float)):
+    if isinstance(raw, int | float):
         return float(raw), None, None
     s = str(raw).strip()
     pct_match = re.search(r"([\d.]+)\s*%", s)
@@ -149,7 +157,9 @@ def parse_accuracy(raw) -> tuple[float | None, int | None, int | None]:
     return pct, correct, total
 
 
-def iter_strategy_blocks(results_block: dict):
+def iter_strategy_blocks(
+    results_block: dict[str, Any],
+) -> Iterator[tuple[str, dict[str, Any]]]:
     """Yield (strategy_key, strategy_dict) for every strategy in results."""
     for key, value in results_block.items():
         if key in RESERVED_RESULT_KEYS:
@@ -158,7 +168,7 @@ def iter_strategy_blocks(results_block: dict):
             yield key, value
 
 
-def rows_from_yaml(path: Path) -> list[dict]:
+def rows_from_yaml(path: Path) -> list[dict[str, Any]]:
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
     except Exception as e:
@@ -200,7 +210,7 @@ def rows_from_yaml(path: Path) -> list[dict]:
             contributor = ""
             contributor_source = ""
 
-    rows = []
+    rows: list[dict[str, Any]] = []
     for strategy_key, strategy_block in iter_strategy_blocks(results_block):
         pct, correct, total = parse_accuracy(strategy_block.get("accuracy"))
         rows.append({
@@ -230,7 +240,10 @@ def rows_from_yaml(path: Path) -> list[dict]:
             "date_tested": date_tested,
             "contributor": contributor,
             "contributor_source": contributor_source,
-            "notes": (data.get("notes", "") or "").strip().splitlines()[0] if data.get("notes") else "",
+            "notes": (
+                (data.get("notes", "") or "").strip().splitlines()[0]
+                if data.get("notes") else ""
+            ),
             "source_file": str(path.as_posix()),
         })
     if not rows:
@@ -242,12 +255,13 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "unknown"
 
 
-def write_csv(path: Path, rows: list[dict]) -> None:
+def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    def sort_key(r):
+
+    def sort_key(r: dict[str, Any]) -> tuple[float, str, str]:
         pct = r["accuracy_pct"]
         pct_val = -float(pct) if pct not in ("", None) else 1.0
-        return (pct_val, str(r.get("date_tested", "")), r.get("model", ""))
+        return (pct_val, str(r.get("date_tested", "")), str(r.get("model", "")))
     rows_sorted = sorted(rows, key=sort_key)
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=COLUMNS)
@@ -272,8 +286,8 @@ def main() -> int:
         write_csv(args.out_dir / "all.csv", [])
         return 0
 
-    all_rows: list[dict] = []
-    per_dataset: dict[str, list[dict]] = {}
+    all_rows: list[dict[str, Any]] = []
+    per_dataset: dict[str, list[dict[str, Any]]] = {}
     for path in yaml_files:
         for row in rows_from_yaml(path):
             all_rows.append(row)
