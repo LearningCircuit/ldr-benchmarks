@@ -14,9 +14,9 @@ average_results_per_query: 22
 
 # Hardware
 hardware:
-  gpu: NVIDIA GeForce RTX 4090 [Discrete] 
-  ram: 32GB 
-  cpu: AMD Ryzen 7 7800X3D (16) @ 5.02 GHz 
+  gpu: NVIDIA GeForce RTX 4090 [Discrete]
+  ram: 32GB
+  cpu: AMD Ryzen 7 7800X3D (16) @ 5.02 GHz
 
 # Benchmark Results
 results:
