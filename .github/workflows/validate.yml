@@ -1,0 +1,49 @@
+name: Validate benchmark submissions
+
+on:
+  pull_request:
+    paths:
+      - 'results/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/validate.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history so git-contributor inference can look up
+          # the original author of each results/*.yaml file.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml pre-commit
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files --show-diff-on-failure
+
+      - name: Run unit tests
+        run: python -m unittest tests.test_scripts -v
+
+      - name: Validate YAML submissions
+        run: python scripts/validate_yamls.py --results-dir results
+
+      - name: Rebuild leaderboards (dry check)
+        run: python scripts/build_leaderboards.py --results-dir results --out-dir /tmp/leaderboards
+
+      - name: Show leaderboard diff this PR would produce
+        run: |
+          echo "## Leaderboard changes this PR would produce" >> "$GITHUB_STEP_SUMMARY"
+          echo '```diff' >> "$GITHUB_STEP_SUMMARY"
+          if diff -u leaderboards/ /tmp/leaderboards/ >> "$GITHUB_STEP_SUMMARY" 2>&1; then
+            echo "(no changes)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
