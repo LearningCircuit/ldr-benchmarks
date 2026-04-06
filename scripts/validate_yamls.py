@@ -23,7 +23,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import TypedDict
 
 try:
     import yaml
