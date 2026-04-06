@@ -159,9 +159,13 @@ def check_file(path: Path, results_root: Path) -> list[str]:
 
     # Path convention: results/{dataset}/{strategy}/{search_engine}/{file}.yaml
     try:
-        rel = path.relative_to(results_root)
+        rel = path.resolve().relative_to(results_root.resolve())
     except ValueError:
         rel = None
+        errors.append(
+            f"file is not under results dir '{results_root}' — cannot verify "
+            f"path convention results/{{dataset}}/{{strategy}}/{{search_engine}}/{{file}}.yaml"
+        )
     if rel is not None:
         parts = rel.parts
         if len(parts) != 4:
@@ -193,7 +197,7 @@ def check_file(path: Path, results_root: Path) -> list[str]:
 
     # Restricted benchmarks must not contain examples
     if benchmark_entry and benchmark_entry["restricted"]:
-        if "examples" in data and data.get("examples"):
+        if "examples" in data:
             errors.append(
                 f"dataset '{benchmark_entry['canonical_id']}' is restricted — "
                 f"per-question examples are not allowed for this benchmark. "
