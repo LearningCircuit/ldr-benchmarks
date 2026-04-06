@@ -25,7 +25,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pyyaml
+        run: pip install pyyaml pre-commit
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files --show-diff-on-failure
 
       - name: Run unit tests
         run: python -m unittest tests.test_scripts -v
@@ -35,3 +38,12 @@ jobs:
 
       - name: Rebuild leaderboards (dry check)
         run: python scripts/build_leaderboards.py --results-dir results --out-dir /tmp/leaderboards
+
+      - name: Show leaderboard diff this PR would produce
+        run: |
+          echo "## Leaderboard changes this PR would produce" >> "$GITHUB_STEP_SUMMARY"
+          echo '```diff' >> "$GITHUB_STEP_SUMMARY"
+          if diff -u leaderboards/ /tmp/leaderboards/ >> "$GITHUB_STEP_SUMMARY" 2>&1; then
+            echo "(no changes)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
