@@ -2,7 +2,7 @@ model: qwen3.5:9b
 model_provider: OLLAMA
 search_engine: serper
 results:
-  dataset: SimpleQA
+  dataset: xbench_deepsearch
   total_questions: 100
   langgraph_agent:
     accuracy: "59.0% (59/100)"
