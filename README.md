@@ -220,8 +220,8 @@ add `contributor: your-handle` to the YAML.
 <!-- CONTRIBUTORS:START -->
 Thanks to everyone who has contributed benchmark runs:
 
+- **LearningCircuit** — 2 submissions
 - **kwhyte7** — 1 submission
-- **LearningCircuit** — 1 submission
 <!-- CONTRIBUTORS:END -->
 
 See [`CONTRIBUTORS.md`](CONTRIBUTORS.md) for the full list (auto-generated).
