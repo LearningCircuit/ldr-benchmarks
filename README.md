@@ -215,6 +215,17 @@ column indicating where the name came from:
 If you want credit under a handle other than your git commit name,
 add `contributor: your-handle` to the YAML.
 
+## Contributors
+
+<!-- CONTRIBUTORS:START -->
+Thanks to everyone who has contributed benchmark runs:
+
+- **kwhyte7** — 1 submission
+- **LearningCircuit** — 1 submission
+<!-- CONTRIBUTORS:END -->
+
+See [`CONTRIBUTORS.md`](CONTRIBUTORS.md) for the full list (auto-generated).
+
 ## Local development
 
 ```bash
