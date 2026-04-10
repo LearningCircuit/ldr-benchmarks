@@ -51,6 +51,16 @@ jobs:
       - name: Update contributors list
         run: python scripts/update_contributors.py
 
+      # IMPORTANT: HF sync MUST run BEFORE create-pull-request, because
+      # peter-evans/create-pull-request restores the workspace to the
+      # base branch HEAD after creating its PR, reverting the freshly
+      # rebuilt leaderboards/CONTRIBUTORS files. If the sync runs after,
+      # it ends up uploading the OLD main state instead of the rebuild.
+      - name: Sync CSVs + README to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python scripts/sync_to_hf.py --commit-message "Sync leaderboards from GitHub ${{ github.sha }}"
+
       - name: Open PR for regenerated leaderboards (if changed)
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
@@ -69,8 +79,3 @@ jobs:
             README.md
             hf_README.md
           delete-branch: true
-
-      - name: Sync CSVs + README to Hugging Face
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: python scripts/sync_to_hf.py --commit-message "Sync leaderboards from GitHub ${{ github.sha }}"
