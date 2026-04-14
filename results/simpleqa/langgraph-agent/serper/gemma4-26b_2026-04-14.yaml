@@ -1,0 +1,22 @@
+model: gemma4:26b
+model_provider: OLLAMA
+search_engine: serper
+results:
+  dataset: SimpleQA
+  total_questions: 300
+  langgraph_agent:
+    accuracy: "73.1% (219/300)"
+    iterations: 10
+    questions_per_iteration: 1
+    avg_time_per_question: "23.6s"
+configuration:
+  temperature: 0.7
+  context_window: 36352  # captured at benchmark start
+  max_tokens: 30000  # captured at benchmark start
+evaluator:
+  model: gemma4:26b
+  provider: ollama
+  temperature: 0
+versions:
+  ldr_version: 1.5.6
+date_tested: 2026-04-14
