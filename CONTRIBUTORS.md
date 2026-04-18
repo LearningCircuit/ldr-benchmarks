@@ -5,6 +5,6 @@ Auto-generated from `leaderboards/all.csv` by `scripts/update_contributors.py`. 
 <!-- CONTRIBUTORS:START -->
 Thanks to everyone who has contributed benchmark runs:
 
-- **LearningCircuit** — 2 submissions
+- **LearningCircuit** — 5 submissions
 - **kwhyte7** — 1 submission
 <!-- CONTRIBUTORS:END -->
