@@ -1,0 +1,22 @@
+model: qwen3.6:latest
+model_provider: OLLAMA
+search_engine: serper
+results:
+  dataset: SimpleQA
+  total_questions: 300
+  langgraph_agent:
+    accuracy: "95.7% (287/300)"
+    iterations: 10
+    questions_per_iteration: 1
+    avg_time_per_question: "3m 19s"
+configuration:
+  temperature: 0.7
+  context_window: 36352  # captured at benchmark start
+  max_tokens: 30000  # captured at benchmark start
+evaluator:
+  model: qwen3.6:latest
+  provider: ollama
+  temperature: 0
+versions:
+  ldr_version: 1.5.6
+date_tested: 2026-04-18
