@@ -11,7 +11,7 @@ results:
     avg_time_per_question: "1m 3s"
 configuration:
   temperature: 0.7
-  context_window_unrestricted: yes  # captured at benchmark start
+  context_window_unrestricted: true  # captured at benchmark start
   max_tokens: 30000  # captured at benchmark start
 evaluator:
   model: gpt-oss-120b
