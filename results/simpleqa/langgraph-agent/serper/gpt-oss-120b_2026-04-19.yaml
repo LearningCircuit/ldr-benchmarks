@@ -1,0 +1,23 @@
+model: gpt-oss-120b
+model_provider: openai_endpoint
+search_engine: serper
+results:
+  dataset: SimpleQA
+  total_questions: 30
+  langgraph-agent:
+    accuracy: "86.7% (26/30)"
+    iterations: 3
+    questions_per_iteration: 1
+    avg_time_per_question: "1m 3s"
+configuration:
+  temperature: 0.7
+  context_window_unrestricted: yes  # captured at benchmark start
+  max_tokens: 30000  # captured at benchmark start
+evaluator:
+  model: gpt-oss-120b
+  provider: openai_endpoint
+  endpoint_url: https://api.ai.it.ufl.edu/v1
+  temperature: 0
+versions:
+  ldr_version: 1.5.6
+date_tested: 2026-04-19
