@@ -183,20 +183,49 @@ Keep the `canonical_id` in sync with LDR's
 
 ## Considerations for using the data
 
-This is a community-submitted leaderboard, not a controlled experiment.
+This is a community-submitted leaderboard so the numbers here are estimates and not ground truth. This section explains how much to trust a result and when a difference between two runs is meaningful.
 
-- **Self-reported.** CI validates schema but not that a run actually
-  happened as described.
-- **Evaluator bias.** Most submissions use an LLM grader (Claude 3.7
-  Sonnet by default). Expect ~1% grading error.
-- **Small sample sizes.** Typical runs use 50–200 questions. Confidence
-  intervals are wide; small differences are usually not significant.
-- **Timing is environment-dependent.** Compare `avg_time_per_question`
-  with caution across different hardware/network setups.
-- **Contamination risk.** SimpleQA is publicly distributed. BrowseComp
-  and xbench mitigate this with encryption.
-- **Strategy semantics drift** between LDR versions — prefer comparing
-  runs tagged with the same `ldr_version`.
+**Self-reported results.** CI validates schema and path conventions but
+cannot verify that a run happened exactly as described. Treat every
+submission as coming from a good-faith contributor, but apply the
+guardrails below before drawing conclusions.
+
+**Uncertainty scales with sample size.** A reported accuracy
+is a point estimate with a CI that depends on how many
+questions were tested. The Wilson score interval gives the
+correct range at 95% confidence: Use at least 100 examples before drawing any conclusions, and 200+ before comparing two configurations.
+
+**Small observed differences are likely noise.** To reliably detect a
+real accuracy difference between two configurations (80% statistical
+power, α = 0.05), each configuration needs roughly:
+
+| Difference to detect | Examples needed per config |
+|---|---|
+| 5 pp (e.g., 85% vs 90%)  | ~680 |
+| 10 pp (e.g., 80% vs 90%) | ~200 |
+| 15 pp (e.g., 75% vs 90%) | ~90  |
+
+If the observed gap between two runs is smaller than the margin of error
+for either run, treat the results as a tie.
+
+**Evaluator noise sets a practical floor.** The grader LLM mis-grades
+approximately 1% of responses. This means a 1–2 percentage-point
+difference is indistinguishable from grader error alone, regardless of
+sample size. Differences smaller than ~2–3 pp are not actionable.
+
+**Cross-run comparison requires identical conditions.** Large
+sample sizes cannot save a comparison where any of the following differ
+between runs: LDR version, strategy, grader model, random seed, or
+search engine. Each combination of these factors is a distinct
+experimental condition. See [`METHODOLOGY.md`](METHODOLOGY.md) for
+detail and a pre-flight checklist.
+
+**Timing is environment-dependent.** Compare `avg_time_per_question`
+with caution across different hardware and network setups.
+
+**Contamination risk.** SimpleQA is publicly distributed and model
+providers may have trained on it. BrowseComp and xbench-DeepSearch
+mitigate this with encryption and per-question canary strings.
 
 ## Contributor attribution
 
