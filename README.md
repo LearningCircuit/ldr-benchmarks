@@ -249,7 +249,7 @@ add `contributor: your-handle` to the YAML.
 <!-- CONTRIBUTORS:START -->
 Thanks to everyone who has contributed benchmark runs:
 
-- **LearningCircuit** — 8 submissions
+- **LearningCircuit** — 9 submissions
 - **Daniel Petti** — 1 submission
 - **kwhyte7** — 1 submission
 <!-- CONTRIBUTORS:END -->
