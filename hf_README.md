@@ -125,7 +125,7 @@ is prohibited.
 <!-- CONTRIBUTORS:START -->
 Thanks to everyone who has contributed benchmark runs:
 
-- **LearningCircuit** — 9 submissions
+- **LearningCircuit** — 10 submissions
 - **Daniel Petti** — 1 submission
 - **kwhyte7** — 1 submission
 <!-- CONTRIBUTORS:END -->
